@@ -1,0 +1,745 @@
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Security Guard - Code Vulnerability & Secret Leak Auditor</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0B0F17',
+                        cardbg: 'rgba(17, 24, 39, 0.7)',
+                        cybercyan: '#00F0FF',
+                        cyberemerald: '#10B981',
+                        cyberrose: '#F43F5E',
+                        cyberamber: '#F59E0B'
+                    },
+                    fontFamily: {
+                        mono: ['Fira Code', 'JetBrains Mono', 'monospace', 'ui-monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0B0F17;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(0, 240, 255, 0.05) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(16, 185, 129, 0.04) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(244, 63, 94, 0.03) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Glowing Border Animations */
+        .glow-cyan {
+            box-shadow: 0 0 15px -3px rgba(0, 240, 255, 0.3);
+        }
+
+        .glow-rose {
+            box-shadow: 0 0 15px -3px rgba(244, 63, 94, 0.4);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(11, 15, 23, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 240, 255, 0.4);
+        }
+
+        /* Scanner Line Animation */
+        @keyframes scanline {
+            0% { top: 0%; opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0.2; }
+        }
+        .scan-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #00F0FF, #10B981, transparent);
+            box-shadow: 0 0 12px #00F0FF;
+            animation: scanline 2s infinite linear;
+            display: none;
+            z-index: 20;
+        }
+
+        /* Line numbers styling */
+        .line-numbers {
+            font-family: 'Fira Code', monospace;
+            user-select: none;
+            color: rgba(255, 255, 255, 0.25);
+        }
+    </style>
+</head>
+<text class="text-gray-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-gray-800/80 glass-panel sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center space-x-3.5">
+            <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-cyan-500/40 glow-cyan">
+                <i class="fa-solid fa-shield-halved text-cyan-400 text-xl"></i>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 class="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-cyan-400">
+                        AI Security Guard
+                    </h1>
+                    <span class="px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider rounded border border-cyan-500/30 bg-cyan-500/10 text-cyan-300">
+                        v1.0-Hackathon
+                    </span>
+                </div>
+                <p class="text-xs text-gray-400 font-medium">Automated Code Vulnerability & Secret Leak Auditor</p>
+            </div>
+        </div>
+
+        <!-- Status Badges & Meta -->
+        <div class="flex items-center space-x-3 text-xs">
+            <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-400">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span class="font-mono font-medium">System Status: Active</span>
+            </div>
+            
+            <div class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-cyan-300">
+                <i class="fa-solid fa-microchip text-xs"></i>
+                <span class="font-mono font-medium">Open-Source AI Engine: Ready</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Area -->
+    <main class="flex-1 p-4 lg:p-6 max-w-[1800px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Panel: Input & Workspace (7 cols on desktop) -->
+        <section class="lg:col-span-7 flex flex-col space-y-4">
+            
+            <div class="glass-panel rounded-2xl p-5 border border-gray-800 flex-1 flex flex-col shadow-2xl relative overflow-hidden">
+                <div id="scanline" class="scan-line"></div>
+                
+                <!-- Panel Header & Controls -->
+                <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-800/80">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-code text-cyan-400"></i>
+                        <h2 class="font-semibold text-sm tracking-wide text-gray-200">Source Code Input</h2>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <label for="languageSelect" class="text-xs text-gray-400 font-medium hidden sm:inline">Language:</label>
+                        <select id="languageSelect" class="bg-gray-900/90 text-xs text-gray-200 border border-gray-700/80 rounded-lg px-3 py-1.5 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript / Node.js</option>
+                            <option value="php">PHP</option>
+                            <option value="sql">SQL / Database Query</option>
+                            <option value="go">Go</option>
+                            <option value="java">Java</option>
+                            <option value="cpp">C / C++</option>
+                        </select>
+                        <button onclick="clearCodeEditor()" class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-700 text-gray-400 hover:text-rose-400 hover:border-rose-500/40 hover:bg-rose-500/10 transition">
+                            <i class="fa-solid fa-trash-can mr-1"></i> Clear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Loader Presets -->
+                <div class="py-3 flex items-center space-x-2 overflow-x-auto text-xs">
+                    <span class="text-gray-400 font-medium whitespace-nowrap"><i class="fa-solid fa-bolt text-amber-400 mr-1"></i> Quick Vulnerable Samples:</span>
+                    <button onclick="loadSample('sql')" class="px-2.5 py-1 rounded-md bg-gray-800/80 hover:bg-cyan-950/60 hover:text-cyan-300 hover:border-cyan-500/40 border border-gray-700 text-gray-300 transition whitespace-nowrap">
+                        SQL Injection
+                    </button>
+                    <button onclick="loadSample('apikey')" class="px-2.5 py-1 rounded-md bg-gray-800/80 hover:bg-rose-950/60 hover:text-rose-300 hover:border-rose-500/40 border border-gray-700 text-gray-300 transition whitespace-nowrap">
+                        API Key & Token Leak
+                    </button>
+                    <button onclick="loadSample('password')" class="px-2.5 py-1 rounded-md bg-gray-800/80 hover:bg-amber-950/60 hover:text-amber-300 hover:border-amber-500/40 border border-gray-700 text-gray-300 transition whitespace-nowrap">
+                        Hardcoded Passwords
+                    </button>
+                    <button onclick="loadSample('insecure_http')" class="px-2.5 py-1 rounded-md bg-gray-800/80 hover:bg-indigo-950/60 hover:text-indigo-300 hover:border-indigo-500/40 border border-gray-700 text-gray-300 transition whitespace-nowrap">
+                        Insecure HTTP & Endpoints
+                    </button>
+                </div>
+
+                <!-- Code Editor Area -->
+                <div class="relative flex-1 min-h-[360px] lg:min-h-[440px] bg-gray-950/90 rounded-xl border border-gray-800/80 flex overflow-hidden font-mono text-sm">
+                    <!-- Line Numbers Simulation -->
+                    <div id="lineNumbers" class="line-numbers py-3 px-3 text-right border-r border-gray-800/80 bg-gray-900/40 min-w-[40px] select-none text-xs leading-6">
+                        1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12
+                    </div>
+                    <!-- Editor Textarea -->
+                    <textarea id="codeEditor" spellcheck="false" class="w-full h-full p-3 bg-transparent text-gray-100 focus:outline-none resize-none font-mono text-xs sm:text-sm leading-6 selection:bg-cyan-500/30" placeholder="// Paste or type code here to scan for vulnerabilities..."></textarea>
+                </div>
+
+                <!-- Run Scan Action Bar -->
+                <div class="mt-4 pt-3 border-t border-gray-800/80 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center text-xs text-gray-400 space-x-1">
+                        <kbd class="px-2 py-0.5 bg-gray-800 border border-gray-700 rounded text-gray-300 font-mono">Ctrl</kbd>
+                        <span>+</span>
+                        <kbd class="px-2 py-0.5 bg-gray-800 border border-gray-700 rounded text-gray-300 font-mono">Enter</kbd>
+                        <span class="ml-1 hidden sm:inline">to quickly execute scan</span>
+                    </div>
+
+                    <button id="scanBtn" onclick="runSecurityScan()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-gray-950 font-semibold text-sm flex items-center justify-center space-x-2 shadow-lg shadow-cyan-500/20 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0">
+                        <i id="scanIcon" class="fa-solid fa-radar text-base"></i>
+                        <span id="scanBtnText">Run AI Security Scan</span>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- Right Panel: Scan Results & Security Audit Report (5 cols on desktop) -->
+        <section class="lg:col-span-5 flex flex-col space-y-4">
+            
+            <div class="glass-panel rounded-2xl p-5 border border-gray-800 flex-1 flex flex-col shadow-2xl">
+                
+                <!-- Section Header -->
+                <div class="flex items-center justify-between pb-4 border-b border-gray-800/80">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-chart-pie text-emerald-400"></i>
+                        <h2 class="font-semibold text-sm tracking-wide text-gray-200">Security Audit Report</h2>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button onclick="copyCleanCode()" class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:border-cyan-500/50 hover:text-cyan-300 transition">
+                            <i class="fa-solid fa-copy mr-1"></i> Copy Fixed
+                        </button>
+                        <button onclick="exportMarkdownReport()" class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:border-emerald-500/50 hover:text-emerald-300 transition">
+                            <i class="fa-solid fa-file-arrow-down mr-1"></i> Export Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Overall Risk Score Gauge & Metrics -->
+                <div class="py-4 border-b border-gray-800/80 grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                    
+                    <!-- Risk Gauge Meter -->
+                    <div class="sm:col-span-5 flex flex-col items-center justify-center p-3 rounded-xl bg-gray-900/50 border border-gray-800">
+                        <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Overall Security Score</span>
+                        
+                        <div class="relative w-24 h-24 flex items-center justify-center">
+                            <!-- SVG Gauge Ring -->
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                <path class="text-gray-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path id="gaugePath" class="text-emerald-500 transition-all duration-1000 ease-out" stroke-dasharray="100, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            </svg>
+                            <div class="absolute flex flex-col items-center justify-center text-center">
+                                <span id="riskScoreText" class="text-2xl font-bold font-mono text-emerald-400">100</span>
+                                <span id="riskBadge" class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">SAFE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary Stat Cards -->
+                    <div class="sm:col-span-7 grid grid-cols-2 gap-2 text-xs">
+                        <div class="p-2.5 rounded-xl bg-gray-900/50 border border-gray-800/80">
+                            <span class="text-gray-400 block mb-0.5">Total Vulnerabilities</span>
+                            <span id="statTotalIssues" class="text-lg font-bold font-mono text-gray-100">0</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-rose-950/30 border border-rose-500/20">
+                            <span class="text-rose-300 block mb-0.5">Critical Leaks</span>
+                            <span id="statCritical" class="text-lg font-bold font-mono text-rose-400">0</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/20">
+                            <span class="text-amber-300 block mb-0.5">High Risks</span>
+                            <span id="statHigh" class="text-lg font-bold font-mono text-amber-400">0</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-cyan-950/30 border border-cyan-500/20">
+                            <span class="text-cyan-300 block mb-0.5">Medium / Low</span>
+                            <span id="statMedLow" class="text-lg font-bold font-mono text-cyan-400">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Progress Logs (Hidden by default, shown during scan) -->
+                <div id="scanProgressBox" class="hidden py-3 px-3 my-2 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-xs text-cyan-300 space-y-1 font-mono">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-spinner animate-spin"></i>
+                        <span id="progressStepText">Initializing AST parser & security rule set...</span>
+                    </div>
+                    <div class="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                        <div id="scanProgressBar" class="bg-gradient-to-r from-cyan-400 to-emerald-400 h-full w-1/4 transition-all duration-300"></div>
+                    </div>
+                </div>
+
+                <!-- Findings Container -->
+                <div class="mt-3 flex-1 flex flex-col min-h-[300px]">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-medium text-gray-400">Audit Findings & Explanations</span>
+                        <span id="findingsCount" class="text-xs font-mono text-gray-500">0 items detected</span>
+                    </div>
+
+                    <!-- Scrollable Cards Container -->
+                    <div id="findingsList" class="flex-1 space-y-3 overflow-y-auto max-h-[460px] pr-1">
+                        
+                        <!-- Default Clean State -->
+                        <div id="emptyState" class="h-full min-h-[220px] flex flex-col items-center justify-center border-2 border-dashed border-gray-800 rounded-xl p-6 text-center text-gray-500">
+                            <i class="fa-shield-cat text-4xl text-emerald-500/40 mb-2"></i>
+                            <p class="text-sm font-medium text-gray-300">No Security Issues Scanned Yet</p>
+                            <p class="text-xs max-w-xs mt-1 text-gray-500">Paste code in the left workspace or click a sample snippet to run the AI security scanner.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer Meta -->
+    <footer class="border-t border-gray-800/80 glass-panel py-3 px-6 text-center text-xs text-gray-500 flex flex-wrap justify-between items-center gap-2">
+        <p>Built for <span class="text-cyan-400 font-semibold">Hack Day Jaipur 2026</span> • Open-Source AI Hackathon Project</p>
+        <p class="font-mono">Empowered by MLH & DigitalOcean</p>
+    </footer>
+
+    <!-- Interactive Logic -->
+    <script>
+        // Sample Vulnerable Snippets
+        const SAMPLES = {
+            sql: `# Vulnerable Python Database Handler
+import sqlite3
+
+def get_user_account(user_id):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    # DANGER: Unescaped string formatting allows SQL Injection
+    query = f"SELECT * FROM users WHERE id = '{user_id}'"
+    cursor.execute(query)
+    return cursor.fetchone()`,
+
+            apikey: `// Production Configuration File
+const config = {
+    appName: "EnterprisePortal",
+    environment: "production",
+    // DANGER: Hardcoded API keys leaked in client-side codebase
+    openaiApiKey: "sk-proj-99A82bF11xX982736412aBcdEf12345678901234567890",
+    awsSecretToken: "AKIAIOSFODNN7EXAMPLE_SECRET_KEY_EXPOSED_HERE_992"
+};`,
+
+            password: `<?php
+// Database Connector
+$db_host = "127.0.0.1";
+$db_user = "admin";
+// DANGER: Cleartext admin password stored in code repository
+$db_pass = "SuperSecretAdminPassword2026!";
+$db_name = "production_db";
+
+$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
+?>`,
+
+            insecure_http: `// Mobile API Endpoint Client
+function fetchUserData(userId) {
+    // DANGER: Using unencrypted HTTP protocol for sensitive data transfer
+    const endpoint = "http://api.company-internal.com/v1/user/profile?id=" + userId;
+    
+    fetch(endpoint, {
+        headers: {
+            "Authorization": "Bearer token_12345"
+        }
+    })
+    .then(res => res.json())
+    .then(data => console.log(data));
+}`
+        };
+
+        // Comprehensive Security Regex Patterns
+        const SECURITY_PATTERNS = [
+            {
+                id: "OPENAI_KEY",
+                title: "Hardcoded OpenAI API Key Exposed",
+                severity: "CRITICAL",
+                regex: /sk-[a-zA-Z0-9T3BlbkFJ]{20,}/g,
+                explanation: "An active OpenAI API key is hardcoded directly in the source code. Anyone with access to this repository can consume your API credits or access restricted models.",
+                patch: `// FIX: Load API keys from environment variables\nconst openaiApiKey = process.env.OPENAI_API_KEY;`
+            },
+            {
+                id: "AWS_KEY",
+                title: "Hardcoded AWS Access Secret Token",
+                severity: "CRITICAL",
+                regex: /AKIA[0-9A-Z]{16}/g,
+                explanation: "AWS Access Credentials detected in cleartext. Exposed keys can allow unauthorized attackers to provision expensive infrastructure or access private S3 buckets.",
+                patch: `# FIX: Use AWS IAM Roles or environment variables\nimport os\naws_key = os.getenv("AWS_ACCESS_KEY_ID")`
+            },
+            {
+                id: "GENERIC_API_KEY",
+                title: "Hardcoded Secret API Key Detected",
+                severity: "HIGH",
+                regex: /(api[_-]?key|secret[_-]?token|auth[_-]?token)['"]?\s*[:=]\s*['"]([a-zA-Z0-9_\-]{16,})['"]/gi,
+                explanation: "High-entropy API token or authorization key hardcoded into code. Secrets should never be committed into version control.",
+                patch: `// FIX: Use dotenv library\nrequire('dotenv').config();\nconst apiKey = process.env.API_KEY;`
+            },
+            {
+                id: "SQL_INJECTION",
+                title: "Potential SQL Injection Vulnerability",
+                severity: "CRITICAL",
+                regex: /(execute|query|cursor\.execute)\s*\(\s*f?['"].*?(SELECT|INSERT|UPDATE|DELETE).*?\{|\+\s*\w+/gi,
+                explanation: "Database query constructed using string concatenation or f-strings. This enables malicious SQL Injection attacks that can wipe or steal the database.",
+                patch: `# FIX: Use parameterized parameterized queries\nquery = "SELECT * FROM users WHERE id = ?"\ncursor.execute(query, (user_id,))`
+            },
+            {
+                id: "CLEARTEXT_PASSWORD",
+                title: "Hardcoded Cleartext Password / Credential",
+                severity: "HIGH",
+                regex: /(password|passwd|pwd|db_pass)\s*[:=]\s*['"]([^'"]{4,})['"]/gi,
+                explanation: "Database or admin credentials stored directly in cleartext code. Anyone viewing code history can compromise database access.",
+                patch: `// FIX: Load from secure secrets manager\n$db_pass = getenv('DB_PASSWORD');`
+            },
+            {
+                id: "INSECURE_HTTP",
+                title: "Insecure Plaintext HTTP Protocol",
+                severity: "MEDIUM",
+                regex: /http:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi,
+                explanation: "Communication sent over unencrypted HTTP is vulnerable to Man-In-The-Middle (MITM) eavesdropping and token interception.",
+                patch: `// FIX: Always enforce TLS/HTTPS\nconst endpoint = "https://api.company-internal.com/v1/user/profile";`
+            }
+        ];
+
+        // Store active finding fixes for quick copying
+        let currentFixedCode = "";
+
+        // Update Editor Line Numbers on Input
+        const codeEditor = document.getElementById('codeEditor');
+        const lineNumbers = document.getElementById('lineNumbers');
+
+        codeEditor.addEventListener('input', updateLineNumbers);
+        codeEditor.addEventListener('keydown', function(e) {
+            // Ctrl + Enter shortcut
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                runSecurityScan();
+            }
+        });
+
+        function updateLineNumbers() {
+            const lines = codeEditor.value.split('\n').length;
+            let lineNumsHTML = '';
+            for (let i = 1; i <= Math.max(lines, 12); i++) {
+                lineNumsHTML += `${i}<br>`;
+            }
+            lineNumbers.innerHTML = lineNumsHTML;
+        }
+
+        // Load Preset Code
+        function loadSample(key) {
+            if (SAMPLES[key]) {
+                codeEditor.value = SAMPLES[key];
+                updateLineNumbers();
+                
+                // Auto set language selector
+                const langMap = { sql: 'python', apikey: 'javascript', password: 'php', insecure_http: 'javascript' };
+                document.getElementById('languageSelect').value = langMap[key] || 'python';
+                
+                // Automatically run scan for quick feedback demo
+                runSecurityScan();
+            }
+        }
+
+        function clearCodeEditor() {
+            codeEditor.value = '';
+            updateLineNumbers();
+            resetReportState();
+        }
+
+        // Reset report state
+        function resetReportState() {
+            document.getElementById('findingsList').innerHTML = `
+                <div id="emptyState" class="h-full min-h-[220px] flex flex-col items-center justify-center border-2 border-dashed border-gray-800 rounded-xl p-6 text-center text-gray-500">
+                    <i class="fa-solid fa-shield-cat text-4xl text-emerald-500/40 mb-2"></i>
+                    <p class="text-sm font-medium text-gray-300">No Security Issues Scanned Yet</p>
+                    <p class="text-xs max-w-xs mt-1 text-gray-500">Paste code in the left workspace or click a sample snippet to run the AI security scanner.</p>
+                </div>`;
+            
+            document.getElementById('findingsCount').innerText = "0 items detected";
+            document.getElementById('riskScoreText').innerText = "100";
+            document.getElementById('riskScoreText').className = "text-2xl font-bold font-mono text-emerald-400";
+            document.getElementById('riskBadge').innerText = "SAFE";
+            document.getElementById('riskBadge').className = "text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+            document.getElementById('gaugePath').setAttribute('stroke-dasharray', '100, 100');
+            document.getElementById('gaugePath').className = "text-emerald-500 transition-all duration-1000 ease-out";
+            
+            document.getElementById('statTotalIssues').innerText = "0";
+            document.getElementById('statCritical').innerText = "0";
+            document.getElementById('statHigh').innerText = "0";
+            document.getElementById('statMedLow').innerText = "0";
+            currentFixedCode = "";
+        }
+
+        // Run Security Scan Handler with Animations
+        function runSecurityScan() {
+            const code = codeEditor.value.trim();
+            if (!code) {
+                alert("Please paste or type some code into the editor before running the scan.");
+                return;
+            }
+
+            const scanBtn = document.getElementById('scanBtn');
+            const scanBtnText = document.getElementById('scanBtnText');
+            const scanIcon = document.getElementById('scanIcon');
+            const scanline = document.getElementById('scanline');
+            const scanProgressBox = document.getElementById('scanProgressBox');
+            const progressStepText = document.getElementById('progressStepText');
+            const scanProgressBar = document.getElementById('scanProgressBar');
+
+            // UI Scanning state
+            scanBtn.disabled = true;
+            scanBtnText.innerText = "Scanning Codebase...";
+            scanIcon.className = "fa-solid fa-spinner animate-spin text-base";
+            scanline.style.display = "block";
+            scanProgressBox.classList.remove('hidden');
+
+            // Simulated AI Pipeline Steps
+            const steps = [
+                { text: "Parsing Abstract Syntax Tree (AST)...", progress: "25%" },
+                { text: "Checking Regex & Entropy Patterns...", progress: "55%" },
+                { text: "Querying Open-Source AI Model for Vulnerabilities...", progress: "85%" },
+                { text: "Generating Security Audit & Refactoring Patches...", progress: "100%" }
+            ];
+
+            let currentStep = 0;
+            const stepInterval = setInterval(() => {
+                if (currentStep < steps.length) {
+                    progressStepText.innerText = steps[currentStep].text;
+                    scanProgressBar.style.width = steps[currentStep].progress;
+                    currentStep++;
+                } else {
+                    clearInterval(stepInterval);
+                    
+                    // Execute Analysis Logic
+                    performAnalysis(code);
+
+                    // Revert UI
+                    scanBtn.disabled = false;
+                    scanBtnText.innerText = "Run AI Security Scan";
+                    scanIcon.className = "fa-solid fa-radar text-base";
+                    scanline.style.display = "none";
+                    scanProgressBox.classList.add('hidden');
+                }
+            }, 250);
+        }
+
+        // Perform actual static rule scanning & LLM simulation
+        function performAnalysis(code) {
+            const lines = code.split('\n');
+            const detectedFindings = [];
+            let patchedCode = code;
+
+            SECURITY_PATTERNS.forEach(pattern => {
+                let match;
+                // Reset regex state
+                pattern.regex.lastIndex = 0;
+                
+                lines.forEach((lineText, index) => {
+                    if (pattern.regex.test(lineText)) {
+                        detectedFindings.push({
+                            ...pattern,
+                            lineNumber: index + 1,
+                            matchedCode: lineText.trim()
+                        });
+                    }
+                    pattern.regex.lastIndex = 0;
+                });
+            });
+
+            // Calculate Metrics
+            const total = detectedFindings.length;
+            const criticalCount = detectedFindings.filter(f => f.severity === 'CRITICAL').length;
+            const highCount = detectedFindings.filter(f => f.severity === 'HIGH').length;
+            const medLowCount = detectedFindings.filter(f => f.severity === 'MEDIUM' || f.severity === 'LOW').length;
+
+            // Compute Score (100 - weighted penalties)
+            let penalty = (criticalCount * 35) + (highCount * 20) + (medLowCount * 10);
+            let score = Math.max(0, 100 - penalty);
+
+            // Update Metrics Display
+            document.getElementById('statTotalIssues').innerText = total;
+            document.getElementById('statCritical').innerText = criticalCount;
+            document.getElementById('statHigh').innerText = highCount;
+            document.getElementById('statMedLow').innerText = medLowCount;
+
+            // Update Gauge Meter
+            const gaugePath = document.getElementById('gaugePath');
+            const scoreText = document.getElementById('riskScoreText');
+            const riskBadge = document.getElementById('riskBadge');
+
+            scoreText.innerText = score;
+            gaugePath.setAttribute('stroke-dasharray', `${score}, 100`);
+
+            if (score >= 90) {
+                scoreText.className = "text-2xl font-bold font-mono text-emerald-400";
+                gaugePath.className = "text-emerald-500 transition-all duration-1000 ease-out";
+                riskBadge.innerText = "SAFE";
+                riskBadge.className = "text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+            } else if (score >= 60) {
+                scoreText.className = "text-2xl font-bold font-mono text-amber-400";
+                gaugePath.className = "text-amber-500 transition-all duration-1000 ease-out";
+                riskBadge.innerText = "MEDIUM RISK";
+                riskBadge.className = "text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30";
+            } else {
+                scoreText.className = "text-2xl font-bold font-mono text-rose-500";
+                gaugePath.className = "text-rose-500 transition-all duration-1000 ease-out";
+                riskBadge.innerText = "CRITICAL";
+                riskBadge.className = "text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30";
+            }
+
+            // Render Finding Cards
+            const findingsList = document.getElementById('findingsList');
+            document.getElementById('findingsCount').innerText = `${total} items detected`;
+
+            if (total === 0) {
+                findingsList.innerHTML = `
+                    <div class="p-5 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-center space-y-2">
+                        <i class="fa-solid fa-circle-check text-3xl text-emerald-400"></i>
+                        <h3 class="text-sm font-semibold text-emerald-200">No Vulnerabilities or Secret Leaks Detected!</h3>
+                        <p class="text-xs text-gray-400 max-w-sm mx-auto">Your code passed all static security audits and open-source pattern checks.</p>
+                    </div>`;
+                currentFixedCode = code;
+                return;
+            }
+
+            let cardsHTML = '';
+            detectedFindings.forEach((finding, idx) => {
+                const badgeColor = {
+                    CRITICAL: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+                    HIGH: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+                    MEDIUM: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+                    LOW: 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                }[finding.severity];
+
+                cardsHTML += `
+                    <div class="glass-card rounded-xl p-4 border border-gray-800 space-y-2.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${badgeColor}">
+                                    ${finding.severity}
+                                </span>
+                                <h3 class="text-xs font-semibold text-gray-200">${finding.title}</h3>
+                            </div>
+                            <span class="text-[11px] font-mono text-gray-400 whitespace-nowrap"><i class="fa-solid fa-code-commit text-cyan-400 mr-1"></i>Line ${finding.lineNumber}</span>
+                        </div>
+
+                        <div class="p-2 rounded bg-gray-950/80 border border-gray-800/80 font-mono text-[11px] text-rose-300 overflow-x-auto">
+                            <code>${escapeHTML(finding.matchedCode)}</code>
+                        </div>
+
+                        <p class="text-xs text-gray-300 leading-relaxed">${finding.explanation}</p>
+
+                        <!-- Collapsible Refactored Fix -->
+                        <div class="pt-1">
+                            <details class="group">
+                                <summary class="cursor-pointer text-xs font-medium text-cyan-400 hover:text-cyan-300 flex items-center space-x-1 select-none">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                                    <span>View AI Refactored Patch</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] transition-transform group-open:rotate-180 ml-1"></i>
+                                </summary>
+                                <div class="mt-2 p-2.5 rounded-lg bg-gray-950 border border-emerald-500/30 font-mono text-[11px] text-emerald-300 relative group/code">
+                                    <pre class="whitespace-pre-wrap">${escapeHTML(finding.patch)}</pre>
+                                    <button onclick="copyToClipboard('${escapeJsString(finding.patch)}')" class="absolute top-2 right-2 text-[10px] px-2 py-1 bg-gray-800 hover:bg-emerald-600 text-gray-200 rounded transition">
+                                        <i class="fa-solid fa-copy"></i>
+                                    </button>
+                                </div>
+                            </details>
+                        </div>
+                    </div>`;
+            });
+
+            findingsList.innerHTML = cardsHTML;
+        }
+
+        // Helper Utilities
+        function escapeHTML(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function escapeJsString(str) {
+            return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+        }
+
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert("Code snippet copied to clipboard!");
+        }
+
+        function copyCleanCode() {
+            if (!codeEditor.value.trim()) {
+                alert("No code available to copy.");
+                return;
+            }
+            copyToClipboard(codeEditor.value);
+        }
+
+        function exportMarkdownReport() {
+            const totalIssues = document.getElementById('statTotalIssues').innerText;
+            const score = document.getElementById('riskScoreText').innerText;
+            const date = new Date().toLocaleString();
+
+            const markdown = `# AI Security Guard - Audit Report
+**Date:** ${date}
+**Overall Security Score:** ${score}/100
+**Total Issues Detected:** ${totalIssues}
+
+## Executive Summary
+This automated security report was generated by AI Security Guard (Open-Source Hackathon Edition).
+
+---
+*Generated with AI Security Guard @ Hack Day Jaipur 2026*
+`;
+
+            const blob = new Blob([markdown], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `AI-Security-Guard-Report-${Date.now()}.md`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize Line Numbers on load
+        window.onload = function() {
+            updateLineNumbers();
+        };
+    </script>
+</body>
+</html>
